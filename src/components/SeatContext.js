@@ -5,7 +5,7 @@ export const SeatContext = React.createContext();
 const initialState = {
   hasLoaded: false,
   seats: null,
-  numOfRow: 0,
+  numOfRows: 0,
   seatsPerRow: 0,
 };
 
