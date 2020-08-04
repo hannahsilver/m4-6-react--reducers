@@ -7,6 +7,7 @@ const initialState = {
   seats: null,
   numOfRows: 0,
   seatsPerRow: 0,
+  bookedSeats: 0,
 };
 
 function reducer(state, action) {
@@ -18,6 +19,7 @@ function reducer(state, action) {
         seats: action.payload.seats,
         numOfRows: action.payload.numOfRows,
         seatsPerRow: action.payload.seatsPerRow,
+        bookedSeats: action.payload.bookedSeats,
       };
     }
     default:
