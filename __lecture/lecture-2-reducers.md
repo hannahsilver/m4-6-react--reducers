@@ -291,13 +291,21 @@ Update the following examples to use `useReducer`
 
 ```jsx
 // Exercise 1
+
+const recuder = (state, action) => {
+  if (action.type === "TOGGLE-LIGHT") {
+    return !state;
+  } else {
+    throw new Error("Action type not founnd.");
+  }
+};
 const LightSwitch = () => {
-  const [isOn, setIsOn] = React.useState(false);
+  const [state, dispatch] = React.useReducer(reducer, false);
 
   return (
     <>
-      Light is {isOn ? "on" : "off"}.
-      <button onClick={() => setIsOn(!isOn)}>Toggle</button>
+      Light is {state ? "on" : "off"}.
+      <button onClick={() => dispatch({ type: "TOGGLE-LIGHT" })}>Toggle</button>
     </>
   );
 };
@@ -309,24 +317,41 @@ const LightSwitch = () => {
 
 ```jsx
 // Exercise 2
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "REQUESt-DATA": {
+      return "loading";
+    }
+    case "RECEIVE-DATA": {
+      return "idle";
+    }
+    case "RECEIVE-ERROR": {
+      return "error";
+    }
+    default:
+      throw new Error("Unrecognized action");
+  }
+};
+
 function App() {
-  const [status, setStatus] = React.useState("idle");
+  const [state, dispatch] = React.useReducer(reducer, "idle");
 
   return (
     <form
       onSubmit={() => {
-        setStatus("loading");
+        dispatch({ type: "REQUEST-DATA" });
 
         getStatusFromServer()
           .then(() => {
-            setStatus("idle");
+            dispatch({ type: "RECEIVE-DATA" });
           })
           .catch(() => {
-            setStatus("error");
+            dispatch({ type: "RECEIVE-ERROR" });
           });
       }}
     >
-      Status is: {status}
+      Status is: {state}
       <button>Submit</button>
     </form>
   );
@@ -503,20 +528,43 @@ Update these objects to use `useReducer`, with a single immutable object
 
 ```jsx
 // Exercise 4
+
+const initialState = { points: 0, status: "idle" };
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INCREMENT":
+      return {
+        ...state,
+        points: state.points + 1,
+      };
+    case "DECREMENT":
+      return {
+        ...state,
+        points: state.points - 1,
+      };
+    case "START-GAME":
+      return {
+        points: 0,
+        status: "playing",
+      };
+    default:
+      return state;
+  }
+};
+
 const Game = () => {
-  const [points, setPoints] = React.useState(0);
-  const [status, setStatus] = React.useState("idle");
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
   return (
     <>
-      Your score: {points}.
+      Your score: {state.points}.
       {status === "playing" && (
         <>
-          <button onClick={() => setPoints(points + 1)}>🍓</button>
-          <button onClick={() => setPoints(points - 1)}>💀</button>
+          <button onClick={() => dispatch({ type: "INCREMENT" })}>🍓</button>
+          <button onClick={() => dispatch({ type: "DECREMENT" })}>💀</button>
         </>
       )}
-      <button onClick={() => setStatus("playing")}>Start game</button>
+      <button onClick={() => dispatch({ type: "START-GAME" })}>Start game</button>
     </>
   );
 };
@@ -531,37 +579,69 @@ const Game = () => {
 import sendDataToServer from "./some-madeup-place";
 import FormField from "./some-other-madeup-place";
 
-const SignUpForm = () => {
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [email, setEmail] = React.useState("");
+const initialState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+};
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "UPDATE-FIRST-NAME":
+      return {
+        ...state,
+        firstName: action.value,
+      };
+    case "UPDATE-LAST-NAME":
+      return {
+        ...state,
+        lastName: action.value,
+      };
+    case "UPDATE-EMAIL":
+      return {
+        ...state,
+        email: action.value,
+      };
+    case "RESET-FORM":
+      return initialState;
+    default:
+      return {
+        state,
+      };
+  }
+};
+
+const SignUpForm = () => {
+  const [state, dispatch] = React.useReducer(reducer, initialState);
   return (
     <form onSubmit={sendDataToServer}>
       <FormField
         label="First Name"
-        value={firstName}
-        onChange={(ev) => setFirstName(ev.target.value)}
+        value={state.firstName}
+        onChange={(ev) =>
+          dispatch({ type: "UPDATE-FIRST-NAME", firstName: ev.target.value })
+        }
       />
       <FormField
         label="Last Name"
-        value={lastName}
-        onChange={(ev) => setLastName(ev.target.value)}
+        value={state.lastName}
+        onChange={(ev) =>
+          dispatch({ type: "UPDATE-LAST-NAME", lastName: ev.target.value })
+        }
       />
       <FormField
         label="Email"
-        value={email}
-        onChange={(ev) => setEmail(ev.target.value)}
+        value={state.email}
+        onChange={(ev) =>
+          dispatch({ type: "UPDATE-EMAIL", email: ev.target.value })
+        }
       />
 
       <button>Submit</button>
       <button
         onClick={(ev) => {
           ev.preventDefault();
-
-          setFirstName("");
-          setLastName("");
-          setEmail("");
+          dispatch({ type: "RESET-FORM" });
         }}
       >
         Reset
